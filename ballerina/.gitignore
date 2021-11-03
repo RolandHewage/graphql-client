@@ -5,6 +5,8 @@ ballerina.conf
 Config.toml
 
 #json files created inside resources folder
-**/resources
+**/resources/**.json
+
+**/resources/.keep
 
 .devcontainer.json
