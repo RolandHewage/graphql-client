@@ -141,7 +141,7 @@ public type GraphQLClientSourceLocation record {
 
 public type GraphQLErrorDetails record {|
    record {}? data?;
-   GraphQLClientError[]? errors?;
+   GraphQLClientError[]? errors;
    map<anydata>? extensions?;
 |};
 
@@ -150,6 +150,83 @@ public type GraphQLError error<GraphQLErrorDetails>;
 public type Error GraphQLError|error;
 
 public type CountryByCode record {|
-   CountryByCodeResult? data?;
+   CountryByCodeResult? data;
    map<anydata>? extensions?;
 |};
+
+// https://spec.graphql.org/June2018/#sec-Response-Format
+
+
+////// Success scenario
+
+// (Data)
+
+// CountryByCode->data is not optional =>
+// If the operation included execution, the response map must contain an entry with key `data`. (https://spec.graphql.org/June2018/#sec-Response-Format)
+
+// Remove 
+// CountryByCode->data is nullable =>
+// If an error was encountered during the execution that prevented a valid response, the data entry in the response should be null. (https://spec.graphql.org/June2018/#sec-Data)
+
+// (Errors)
+
+// CountryByCode->errors is not present =>
+// If no errors were encountered during the requested operation, the errors entry should not be present in the result. (https://spec.graphql.org/June2018/#sec-Errors)
+// If the operation completed without encountering any errors, this entry must not be present. (https://spec.graphql.org/June2018/#sec-Response-Format)
+
+// (Extensions)
+
+// CountryByCode->extensions is optional & nullable =>
+// The response map may also contain an entry with key extensions. This entry, if set, must have a map as its value. This entry is reserved for implementors to extend the protocol however they see fit, and hence there are no additional restrictions on its contents.
+
+
+////// Error scenario
+
+// (Data)
+
+// CountryByCodeResponse->data is optional =>
+// If an error was encountered before execution begins, the data entry should not be present in the result. (https://spec.graphql.org/June2018/#sec-Data)
+// If the operation failed before execution, due to a syntax error, missing information, or validation error, this entry must not be present. (https://spec.graphql.org/June2018/#sec-Response-Format)
+
+// CountryByCodeResponse->data is nullable =>
+// If an error was encountered during the execution that prevented a valid response, the data entry in the response should be null. (https://spec.graphql.org/June2018/#sec-Data)
+
+// (Errors)
+
+// CountryByCodeResponse->errors is not optional =>
+// If the data entry in the response is not present, the errors entry in the response must not be empty. It must contain at least one error. The errors it contains should indicate why no data was able to be returned. (https://spec.graphql.org/June2018/#sec-Errors)
+// If the data entry in the response is present (including if it is the value null), the errors entry in the response may contain any errors that occurred during execution. If errors occurred during execution, it should contain those errors.
+// If the operation encountered any errors, the response map must contain an entry with key errors. (https://spec.graphql.org/June2018/#sec-Response-Format)
+
+// CountryByCodeResponse->errors is not nullable =>
+// If the data entry in the response is not present, the errors entry in the response must not be empty. It must contain at least one error. The errors it contains should indicate why no data was able to be returned. (https://spec.graphql.org/June2018/#sec-Errors)
+// If the data entry in the response is present (including if it is the value null), the errors entry in the response may contain any errors that occurred during execution. If errors occurred during execution, it should contain those errors.
+
+// (Extensions)
+
+// CountryByCodeResponse->extensions is optional & nullable =>
+// The response map may also contain an entry with key extensions. This entry, if set, must have a map as its value. This entry is reserved for implementors to extend the protocol however they see fit, and hence there are no additional restrictions on its contents.
+
+
+// Generated GraphQL response for the CountinentByCode query (Specific)
+public type ContinentByCodeResponse record {|
+   ContinentByCodeResult? data?;
+   GraphQLClientError[]? errors?;
+   map<anydata>? extensions?;
+|};
+public type ContinentByCode record {|
+   ContinentByCodeResult? data;
+   map<anydata>? extensions?;
+|};
+
+type ContinentByCodeResult record {|
+   Continent4? continent;
+|};
+ 
+type Continent4 record {|
+   string name;
+|};
+
+public type ContinentFilterInput record {
+   StringQueryOperatorInput? code?;
+};

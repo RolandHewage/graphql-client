@@ -1,3 +1,4 @@
+import ballerina/io;
 import ballerina/test;
 
 Client 'client = check new (serviceUrl = "https://countries.trevorblades.com/");
@@ -39,5 +40,33 @@ function executeCountryAndCountries() returns error? {
 function executeNeighbouringCountries() returns error? {
     // Execute NeighbouringCountries query
     NeighbouringCountriesResponse response = check 'client->neighbouringCountries();
+}
+
+// New upgrade
+
+@test:Config {}
+function executeCountryByCodeUpgraded() returns error? {
+    // Execute CountryByCode upgraded query
+    CountryByCode response = check 'client->countryByCodeUpgraded(code = "LK");
+    io:println(response);
+}
+
+@test:Config {}
+function executeContinentByCode() returns error? {
+    // Execute ContinentByCode query
+    StringQueryOperatorInput stringQueryOperatorInput = {
+        eq: "AS"
+    };
+    ContinentFilterInput filter = {
+        code: stringQueryOperatorInput
+    };
+
+    ContinentByCode|Error response = 'client->continentByCode(filter = filter);
+    if (response is GraphQLError) {
+        io:println(response.detail().errors);
+        test:assertFail("GraphQL error");
+    } else {
+        io:println(response);
+    }
 }
 
