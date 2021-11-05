@@ -136,3 +136,20 @@ public type GraphQLClientSourceLocation record {
    int line?;
    int column?;
 };
+
+// New upgrade
+
+public type GraphQLErrorDetails record {|
+   record {}? data?;
+   GraphQLClientError[]? errors?;
+   map<anydata>? extensions?;
+|};
+
+public type GraphQLError error<GraphQLErrorDetails>; 
+
+public type Error GraphQLError|error;
+
+public type CountryByCode record {|
+   CountryByCodeResult? data?;
+   map<anydata>? extensions?;
+|};

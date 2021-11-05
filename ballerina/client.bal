@@ -71,23 +71,45 @@ public isolated client class Client {
        return response;
    }
  
-   remote isolated function neighbouringCountries() returns NeighbouringCountriesResponse|error {
-       string query = 
-         string `query NeighbouringCountries { 
-           countries(filter: {code: {eq: "LK"}}) {   
-               name
-               continent {
-                   countries {
-                       name
-                   }
-               }
-           }
-       }`;
- 
-       map<anydata> variables = {};
- 
-       NeighbouringCountriesResponse response = check self.graphqlClient->execute(query, variables);
-       return response;
-   }
+    remote isolated function neighbouringCountries() returns NeighbouringCountriesResponse|error {
+        string query = 
+            string `query NeighbouringCountries { 
+            countries(filter: {code: {eq: "LK"}}) {   
+                name
+                continent {
+                    countries {
+                        name
+                    }
+                }
+            }
+        }`;
+    
+        map<anydata> variables = {};
+    
+        NeighbouringCountriesResponse response = check self.graphqlClient->execute(query, variables);
+        return response;
+    }
+
+    // New upgrade
+
+    remote isolated function countryByCodeUpgraded(string code) returns CountryByCode|Error {
+        string query = string `query CountryByCode($code: ID!) {
+            country(code: $code) {
+                name
+            }
+        }`;
+
+        map<anydata> variables = { "code": code };
+
+        CountryByCodeResponse response = check self.graphqlClient->execute(query, variables);
+        if !(response?.errors is ()) {
+            return error GraphQLError("GraphQL Error", data = response?.data, errors = response?.errors, 
+                extensions = response?.extensions); 
+        }
+        return {
+            data: response?.data,
+            extensions: response?.extensions
+        };
+    }
 }
 
