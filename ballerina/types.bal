@@ -1,109 +1,129 @@
-// Generated GraphQL response for the CountryByCode query (Specific)
- 
-public type CountryByCodeResponse record {|
-   CountryByCodeResult? data?;
-   GraphQLClientError[]? errors?;
-   map<anydata>? extensions?;
-|};
- 
-// Generated GraphQL response for the CountriesWithContinent query (Specific)
- 
-public type CountriesWithContinentResponse record {|
-   CountriesWithContinentResult? data?;
-   GraphQLClientError[]? errors?;
-   map<anydata>? extensions?;
-|};
- 
-// Generated GraphQL response for the CountryAndCountries query (Specific)
- 
-public type CountryAndCountriesResponse record {|
-   CountryAndCountriesResult? data?;
-   GraphQLClientError[]? errors?;
-   map<anydata>? extensions?;
-|};
- 
-// Generated GraphQL response for the NeighbouringCountries query (Specific)
- 
-public type NeighbouringCountriesResponse record {|
-   NeighbouringCountriesResult? data?;
-   GraphQLClientError[]? errors?;
-   map<anydata>? extensions?;
-|};
- 
 // Generated types for the CountryByCode query (Specific)
  
-type CountryByCodeResult record {|
-   Country? country;
-|};
+// type CountryByCodeResponse record {|
+//    Country? country;
+//    map<json>? extensions?;
+// |};
  
-type Country record {|
-   string name;
+// type Country record {|
+//    string name;
+// |};
+
+type CountryByCodeResponse record {|
+   record {|
+      string name;
+   |}? country;
+   map<json>? __extensions?;
 |};
  
 // Generated types for the CountriesWithContinent query (Specific)
  
-type CountriesWithContinentResult record {|
-   Country1[] countries;
-|};
+// type CountriesWithContinentResponse record {|
+//    Country1[] countries;
+//    map<json>? extensions?;
+// |};
  
-type Country1 record {|
-   string name;
-   Continent continent;
-|};
+// type Country1 record {|
+//    string name;
+//    Continent continent;
+// |};
  
-type Continent record {|
-   Country2[] countries;
-|};
+// type Continent record {|
+//    Country2[] countries;
+// |};
  
-type Country2 record {|
-   string name;
+// type Country2 record {|
+//    string name;
+// |};
+
+type CountriesWithContinentResponse record {|
+   record {|
+      string name;
+      record {|
+         record {|
+            string name;
+         |}[] countries;
+      |} continent;
+   |}[] countries;
+   map<json>? __extensions?;
 |};
  
 // Generated types for the CountryAndCountries query (Specific)
  
-type CountryAndCountriesResult record {|
-   Country3? country;
-   Country4[] countries;
-|};
+// type CountryAndCountriesResponse record {|
+//    Country3? country;
+//    Country4[] countries;
+//    map<json>? extensions?;
+// |};
  
-type Country3 record {|
-   string name;
-|};
+// type Country3 record {|
+//    string name;
+// |};
  
-type Country4 record {|
-   string name;
-   Continent1 continent;
-|};
+// type Country4 record {|
+//    string name;
+//    Continent1 continent;
+// |};
  
-type Continent1 record {|
-   Country5[] countries;
-|};
+// type Continent1 record {|
+//    Country5[] countries;
+// |};
  
-type Country5 record {|
-   Continent2 continent;
-|};
+// type Country5 record {|
+//    Continent2 continent;
+// |};
  
-type Continent2 record {|
-   string name;
+// type Continent2 record {|
+//    string name;
+// |};
+
+type CountryAndCountriesResponse record {|
+   record {|
+      string name;
+   |}? country;
+   record {|
+      string name;
+      record {|
+         record {|
+            record {|
+               string name;
+            |} continent;
+         |}[] countries;
+      |} continent;
+   |}[] countries;
+   map<json>? __extensions?;
 |};
  
 // Generated types for the NeighbouringCountries query (Specific)
  
-type NeighbouringCountriesResult record {|
-   Country6[] countries;
-|};
+// type NeighbouringCountriesResponse record {|
+//    Country6[] countries;
+//    map<json>? extensions?;
+// |};
  
-type Country6 record {|
-   string name;
-   Continent3 continent;
-|};
+// type Country6 record {|
+//    string name;
+//    Continent3 continent;
+// |};
  
-type Continent3 record {|
-   Country7[] countries;
-|};
+// type Continent3 record {|
+//    Country7[] countries;
+// |};
  
-type Country7 record {|
-   string name;
+// type Country7 record {|
+//    string name;
+// |};
+
+type NeighbouringCountriesResponse record {|
+   record {|
+      string name;
+      record {|
+         record {|
+            string name;
+         |}[] countries;
+      |} continent;
+   |}[] countries;
+   map<json>? __extensions?;
 |};
  
 // Generated Input Types
@@ -122,37 +142,7 @@ public type CountryFilterInput record {
    StringQueryOperatorInput? currency?;
    StringQueryOperatorInput? continent?;
 };
- 
-// GraphQL error representation (Generic)
- 
-public type GraphQLClientError record {
-   string message;
-   GraphQLClientSourceLocation[] locations?;
-   anydata[] path?;
-   map<anydata> extensions?;
-};
- 
-public type GraphQLClientSourceLocation record {
-   int line?;
-   int column?;
-};
 
-// New upgrade
-
-public type GraphQLErrorDetails record {|
-   record {}? data?;
-   GraphQLClientError[]? errors;
-   map<anydata>? extensions?;
-|};
-
-public type GraphQLError error<GraphQLErrorDetails>; 
-
-public type Error GraphQLError|error;
-
-public type CountryByCode record {|
-   CountryByCodeResult? data;
-   map<anydata>? extensions?;
-|};
 
 // https://spec.graphql.org/June2018/#sec-Response-Format
 
@@ -206,27 +196,3 @@ public type CountryByCode record {|
 
 // CountryByCodeResponse->extensions is optional & nullable =>
 // The response map may also contain an entry with key extensions. This entry, if set, must have a map as its value. This entry is reserved for implementors to extend the protocol however they see fit, and hence there are no additional restrictions on its contents.
-
-
-// Generated GraphQL response for the CountinentByCode query (Specific)
-public type ContinentByCodeResponse record {|
-   ContinentByCodeResult? data?;
-   GraphQLClientError[]? errors?;
-   map<anydata>? extensions?;
-|};
-public type ContinentByCode record {|
-   ContinentByCodeResult? data;
-   map<anydata>? extensions?;
-|};
-
-type ContinentByCodeResult record {|
-   Continent4? continent;
-|};
- 
-type Continent4 record {|
-   string name;
-|};
-
-public type ContinentFilterInput record {
-   StringQueryOperatorInput? code?;
-};

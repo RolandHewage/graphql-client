@@ -3,35 +3,30 @@ import ballerina.graphql;
 
 public isolated client class Client {
     final graphql:Client graphqlClient;
-    final http:Client httpClient;
     # Gets invoked to initialize the `connector`.
     #
     # + serviceUrl - URL of the target service
     # + clientConfig - The configurations to be used when initializing the `connector`
     # + return - An error at the failure of client initialization
-    public isolated function init(string serviceUrl, http:ClientConfiguration clientConfig = {}) returns error? {
+    public isolated function init(string serviceUrl, http:ClientConfiguration clientConfig = {}) returns graphql:Error? {
         graphql:Client clientEp = check new (serviceUrl, clientConfig);
-        self.graphqlClient = clientEp;
-
-        http:Client httpEp = check new (serviceUrl, clientConfig);
-        self.httpClient = httpEp;
+        self.graphqlClient = clientEp; 
     }
 
-    remote isolated function countryByCode(string code) returns CountryByCodeResponse|error {
+    remote isolated function countryByCode(string code) returns CountryByCodeResponse|graphql:Error {
         string query = string `query CountryByCode($code: ID!) {
-           country(code: $code) {
-               name
-           }
-       }`;
+            country(code: $code) {
+                name
+            }
+        }`; 
 
         map<anydata> variables = {"code": code};
 
-        CountryByCodeResponse response = check self.graphqlClient->execute(query, variables);
-        return response;
+        return <CountryByCodeResponse> check self.graphqlClient->execute(CountryByCodeResponse, query, variables);
     }
 
     remote isolated function countriesWithContinent(CountryFilterInput? filter = ())
-                                                    returns CountriesWithContinentResponse|error {
+                                                    returns CountriesWithContinentResponse|graphql:Error {
         string query =
         string `query CountriesWithContinent($filter: CountryFilterInput) { 
            countries(filter: $filter) {   
@@ -46,12 +41,11 @@ public isolated client class Client {
 
         map<anydata> variables = {"filter": filter};
 
-        CountriesWithContinentResponse response = check self.graphqlClient->execute(query, variables);
-        return response;
+        return <CountriesWithContinentResponse> check self.graphqlClient->execute(CountriesWithContinentResponse, query, variables);
     }
 
     remote isolated function countryAndCountries(string code, CountryFilterInput? filter = ())
-                                                returns CountryAndCountriesResponse|error {
+                                                returns CountryAndCountriesResponse|graphql:Error {
         string query =
         string `query CountryAndCountries($code: ID!, $filter: CountryFilterInput) { 
            country(code: $code) {
@@ -71,11 +65,10 @@ public isolated client class Client {
 
         map<anydata> variables = {"code": code, "filter": filter};
 
-        CountryAndCountriesResponse response = check self.graphqlClient->execute(query, variables);
-        return response;
+        return <CountryAndCountriesResponse> check self.graphqlClient->execute(CountryAndCountriesResponse, query, variables);
     }
 
-    remote isolated function neighbouringCountries() returns NeighbouringCountriesResponse|error {
+    remote isolated function neighbouringCountries() returns NeighbouringCountriesResponse|graphql:Error {
         string query =
             string `query NeighbouringCountries { 
             countries(filter: {code: {eq: "LK"}}) {   
@@ -90,67 +83,7 @@ public isolated client class Client {
 
         map<anydata> variables = {};
 
-        NeighbouringCountriesResponse response = check self.graphqlClient->execute(query, variables);
-        return response;
+        return <NeighbouringCountriesResponse> check self.graphqlClient->execute(NeighbouringCountriesResponse, query, variables);
     }
-
-    // New upgrade
-
-    remote isolated function countryByCodeUpgraded(string code) returns CountryByCode|Error {
-        string query = string `query CountryByCode($code: ID!) {
-            country(code: $code) {
-                name
-            }
-        }`;
-
-        map<anydata> variables = {"code": code};
-
-        CountryByCodeResponse response = check self.graphqlClient->execute(query, variables);
-        if !(response?.errors is ()) {
-            return error GraphQLError("GraphQL Error", data = response?.data, errors = response?.errors,
-                extensions = response?.extensions);
-        }
-        return {
-            data: response?.data,
-            extensions: response?.extensions
-        };
-    }
-
-    remote isolated function continentByCode(ContinentFilterInput? filter = ()) returns ContinentByCode|Error {
-        string query = string `query Query($filter: ContinentFilterInput) {
-            a: continents(filter: $filter) {
-                name
-            }
-            b: continents(filter: null) {
-                name
-            }
-        }`;
-
-        map<anydata> variables = {"filter": filter};
-
-        http:Request request = new;
-        json graphqlPayload = check getGraphqlPayload(query, variables);
-        request.setPayload(graphqlPayload);
-        ContinentByCodeResponse response = check self.httpClient->post("", request, targetType = ContinentByCodeResponse);
-        
-        if !(response?.errors is ()) {
-            return error GraphQLError("GraphQL Error", data = response?.data, errors = response?.errors,
-                extensions = response?.extensions);
-        }
-        return {
-            data: response?.data,
-            extensions: response?.extensions
-        };
-    }
-}
-
-isolated function getGraphqlPayload(string query, map<anydata>? definedVariables = ())
-                                    returns json|error {
-    json variables = definedVariables.toJson();
-    json graphqlPayload = {
-        query: query,
-        variables: variables
-    };
-    return graphqlPayload;
 }
 

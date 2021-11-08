@@ -1,10 +1,12 @@
-public type ClientError distinct error;
+public type Error ClientError|ServerError;
 
-public type ServerError error<record {| json? data?; GraphQLClientError[] errors; map<json>? extensions?; |}>;
+public type ClientError distinct error<record {| anydata body?; |}>;
 
-public type GraphQLClientErrorList GraphQLClientError[];
+public type ServerError distinct error<record {| json? data?; GraphQLClientError[] errors; map<json>? extensions?; |}>;
 
 // GraphQL error representation (Generic)
+
+public type GraphQLClientErrorArray GraphQLClientError[];
  
 public type GraphQLClientError record {
    string message;

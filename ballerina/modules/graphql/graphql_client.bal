@@ -8,44 +8,63 @@ public isolated client class Client {
    # + clientConfig - The configurations to be used when initializing the `connector`
    # + return - An error at the failure of client initialization
    public isolated function init(string serviceUrl, http:ClientConfiguration clientConfig = {})  
-                                 returns error? {
-       http:Client httpEp = check new (serviceUrl, clientConfig);             
-       self.clientEp = httpEp;
+                                 returns Error? {
+      do {
+         http:Client httpEp = check new (serviceUrl, clientConfig);             
+         self.clientEp = httpEp;
+      } on fail var e {
+         return error ClientError("GraphQL Client Error", e);
+      }
    }
 
-   remote function execute(typedesc<record {| json...; |}> td, string query, map<anydata>? variables = (), 
-                           map<string|string[]>? headers = ()) 
-                           returns record {| json...; |}|ClientError|ServerError {
+   remote isolated function execute(typedesc<record {| json...; |}> returnType, string query, 
+                                    map<anydata>? variables = (), map<string|string[]>? headers = ()) 
+                                    returns record {| json...; |}|Error {
       http:Request request = new;
       json graphqlPayload = getGraphqlPayload(query, variables);
       request.setPayload(graphqlPayload);
 
-      json|http:ClientError res = self.clientEp->post("", request, targetType = json);
+      json|http:ClientError httpResponse = self.clientEp->post("", request, headers = headers);
 
-      if res is http:ClientError {
-         return error ClientError("");
-      } else {
-         if !(res.errors is ()) {
-            json|error data = res.data;
-            json|error errors = res.errors;
-            json|error extensions = res.extensions;
+      do {
+         if httpResponse is http:ClientError {
+            if (httpResponse is http:ApplicationResponseError) {
+               anydata data = check httpResponse.detail().get("body").ensureType(anydata);
+               return error ClientError("GraphQL Client Error", body = data);
+            }
+            return error ClientError("GraphQL Client Error", httpResponse);
+         } else {
+            map<json> responseMap = <map<json>> httpResponse;
 
-            if ((data is json) && (extensions is json) && (errors is json)) {
-               GraphQLClientError[] err = (errors).cloneWithType(GraphQLClientErrorList);
-               return error ServerError("GraphQL Error", data = data, errors = err,
-                  extensions = <map<json>> extensions);
+            if (responseMap.hasKey("errors")) {
+               GraphQLClientError[] errors = check responseMap.get("errors").cloneWithType(GraphQLClientErrorArray);
+               
+               if (responseMap.hasKey("data") && !responseMap.hasKey("extensions")) {
+                  return error ServerError("GraphQL Server Error", data = responseMap.get("data"), errors = errors);
+               } else if (responseMap.hasKey("extensions") && !responseMap.hasKey("data")) {
+                  map<json>? extensionsMap = 
+                     (responseMap.get("extensions") is ()) ? () : <map<json>> responseMap.get("extensions");
+                  return error ServerError("GraphQL Server Error", errors = errors, extensions = extensionsMap);
+               } else if (responseMap.hasKey("data") && responseMap.hasKey("extensions")) {
+                  map<json>? extensionsMap = 
+                     (responseMap.get("extensions") is ()) ? () : <map<json>> responseMap.get("extensions") ;
+                  return error ServerError("GraphQL Server Error", data = responseMap.get("data"), errors = errors, 
+                     extensions = extensionsMap);
+               } else {
+                  return error ServerError("GraphQL Server Error", errors = errors);
+               }
+            } else {
+               json responseData = responseMap.get("data");
+               if (responseMap.hasKey("extensions")) {
+                  responseData = check responseData.mergeJson({ "extensions" : responseMap.get("extensions") });
+               }
+               record {| json...; |} response = check responseData.cloneWithType(returnType);
+               return response;
             }
          }
+      } on fail var e {
+         return error ClientError("GraphQL Client Error", e);
       }
-
-      // If json.Errors != (),
-      // create and return ServerError
-
-      // Else create record rec = json.data.cloneWithType(td)
-      // Add extension to rec.
-      // return rec
-      return {};
-
    }
 }
  
