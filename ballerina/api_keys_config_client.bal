@@ -1,16 +1,28 @@
 import ballerina/http;
 import ballerina.graphql;
 
-public isolated client class Client {
+# Provides API key configurations needed when communicating with a remote HTTP endpoint.
+public type ApiKeysConfig record {|
+   # Represents API Key `X-Access-Token`
+   string xAccessToken;
+|};
+
+public isolated client class ApiKeysConfigClient {
     final graphql:Client graphqlClient;
+    final readonly & ApiKeysConfig apiKeyConfig;
+
     # Gets invoked to initialize the `connector`.
     #
+    # + apiKeyConfig - API keys for authorization 
     # + serviceUrl - URL of the target service
     # + clientConfig - The configurations to be used when initializing the `connector`
     # + return - An error at the failure of client initialization
-    public isolated function init(string serviceUrl, http:ClientConfiguration clientConfig = {}) returns graphql:Error? {
+    public isolated function init(ApiKeysConfig apiKeyConfig, string serviceUrl, 
+                                  http:ClientConfiguration clientConfig = {}) 
+                                  returns graphql:Error? {
         graphql:Client clientEp = check new (serviceUrl, clientConfig);
         self.graphqlClient = clientEp; 
+        self.apiKeyConfig = apiKeyConfig.cloneReadOnly();
         return;
     }
 
@@ -23,7 +35,10 @@ public isolated client class Client {
 
         map<anydata> variables = {"code": code};
 
-        return <CountryByCodeResponse> check self.graphqlClient->execute(CountryByCodeResponse, query, variables);
+        map<any> headerValues = {"Access-Token": self.apiKeyConfig.xAccessToken};          
+        map<string|string[]> httpHeaders = getMapForHeaders(headerValues);
+
+        return <CountryByCodeResponse> check self.graphqlClient->execute(CountryByCodeResponse, query, variables, httpHeaders);
     }
 
     remote isolated function countriesWithContinent(CountryFilterInput? filter = ())
@@ -42,7 +57,10 @@ public isolated client class Client {
 
         map<anydata> variables = {"filter": filter};
 
-        return <CountriesWithContinentResponse> check self.graphqlClient->execute(CountriesWithContinentResponse, query, variables);
+        map<any> headerValues = {"Access-Token": self.apiKeyConfig.xAccessToken};          
+        map<string|string[]> httpHeaders = getMapForHeaders(headerValues);
+
+        return <CountriesWithContinentResponse> check self.graphqlClient->execute(CountriesWithContinentResponse, query, variables, httpHeaders);
     }
 
     remote isolated function countryAndCountries(string code, CountryFilterInput? filter = ())
@@ -66,7 +84,10 @@ public isolated client class Client {
 
         map<anydata> variables = {"code": code, "filter": filter};
 
-        return <CountryAndCountriesResponse> check self.graphqlClient->execute(CountryAndCountriesResponse, query, variables);
+        map<any> headerValues = {"Access-Token": self.apiKeyConfig.xAccessToken};          
+        map<string|string[]> httpHeaders = getMapForHeaders(headerValues);
+
+        return <CountryAndCountriesResponse> check self.graphqlClient->execute(CountryAndCountriesResponse, query, variables, httpHeaders);
     }
 
     remote isolated function neighbouringCountries() returns NeighbouringCountriesResponse|graphql:Error {
@@ -84,7 +105,10 @@ public isolated client class Client {
 
         map<anydata> variables = {};
 
-        return <NeighbouringCountriesResponse> check self.graphqlClient->execute(NeighbouringCountriesResponse, query, variables);
+        map<any> headerValues = {"Access-Token": self.apiKeyConfig.xAccessToken};          
+        map<string|string[]> httpHeaders = getMapForHeaders(headerValues);
+
+        return <NeighbouringCountriesResponse> check self.graphqlClient->execute(NeighbouringCountriesResponse, query, variables, httpHeaders);
     }
 }
 

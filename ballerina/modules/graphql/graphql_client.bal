@@ -15,6 +15,7 @@ public isolated client class Client {
       } on fail var e {
          return error ClientError("GraphQL Client Error", e);
       }
+      return;
    }
 
    remote isolated function execute(typedesc<record {| json...; |}> returnType, string query, 

@@ -36,11 +36,13 @@ function executeCountryAndCountries() returns error? {
     };
     // Execute CountryAndCountries query
     CountryAndCountriesResponse response = check 'client->countryAndCountries(code = "LK", filter = filter);
+    io:println(response);
 }
 
 @test:Config {}
 function executeNeighbouringCountries() returns error? {
     // Execute NeighbouringCountries query
     NeighbouringCountriesResponse response = check 'client->neighbouringCountries();
+    io:println(response);
 }
 
