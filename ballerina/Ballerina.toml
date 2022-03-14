@@ -1,0 +1,8 @@
+# [package]
+# org = "ballerinax"
+# name = "graphql"
+# version = "0.1.0"
+# distribution = "slbeta3"
+
+[[platform.java11.dependency]]
+path = "../native/build/libs/native-1.0.0-SNAPSHOT-all.jar"
