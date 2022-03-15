@@ -45,14 +45,15 @@ public isolated client class Client {
    #               `type CountryByCodeResponse record {| map<json?> __extensions?; record{|string name;|}? country; |};`
    # + return - The payload (if the `targetType` is configured) or a `graphql:Error` if failed to execute the query
    remote isolated function execute(string query, map<anydata>? variables = (), map<string|string[]>? headers = (), 
-                                    typedesc<record {}> targetType = <>) returns targetType|Error = @java:Method {
+                                    typedesc<GenericResponse|OperationResponse|json> targetType = <>) 
+                                    returns targetType|Error = @java:Method {
       'class: "io.ballerina.stdlib.graphql.client.QueryExecutor",
       name: "execute"
    } external;
 
-   private isolated function executeQuery(typedesc<record {}> targetType, string query, 
-                                         map<anydata>? variables, map<string|string[]>? headers) 
-                                         returns record {}|Error {
+   private isolated function executeQuery(typedesc<GenericResponse|OperationResponse|json> targetType, string query, 
+                                          map<anydata>? variables, map<string|string[]>? headers) 
+                                          returns GenericResponse|OperationResponse|json|Error {
       http:Request request = new;
       json graphqlPayload = getGraphqlPayload(query, variables);
       request.setPayload(graphqlPayload);
@@ -69,7 +70,7 @@ public isolated client class Client {
          } else {
             map<json> responseMap = <map<json>> httpResponse;
 
-            if (responseMap.hasKey("errors")) {
+            if responseMap.hasKey("errors") {
                GraphQLError[] errors = check responseMap.get("errors").cloneWithType(GraphQLErrorArray);
                
                if (responseMap.hasKey("data") && !responseMap.hasKey("extensions")) {
@@ -87,12 +88,24 @@ public isolated client class Client {
                   return error ServerError("GraphQL Server Error", errors = errors);
                }
             } else {
-               json responseData = responseMap.get("data");
-               if (responseMap.hasKey("extensions")) {
-                  responseData = check responseData.mergeJson({ "extensions" : responseMap.get("extensions") });
+               if targetType is typedesc<GenericResponse> {
+                  json responseData = responseMap.get("data");
+                  if (responseMap.hasKey("extensions")) {
+                     responseData = check responseData.mergeJson({ "extensions" : responseMap.get("extensions") });
+                  }
+                  GenericResponse response = check responseData.cloneWithType(targetType);
+                  return response;
+               } else if targetType is typedesc<OperationResponse> {
+                  json responseData = responseMap.get("data");
+                  OperationResponse response;
+                  foreach var item in <map<json>>responseData {
+                     response = check item.cloneWithType(targetType);
+                  }
+                  return response;
+               } else if targetType is typedesc<json> {
+                  json response = check httpResponse.cloneWithType(targetType);
+                  return response;
                }
-               record {} response = check responseData.cloneWithType(targetType);
-               return response;
             }
          }
       } on fail var e {

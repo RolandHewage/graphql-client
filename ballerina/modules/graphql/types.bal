@@ -33,3 +33,10 @@ public type GraphQLSourceLocation record {
    int line?;
    int column?;
 };
+
+public type OperationResponse record {| anydata...; |}|record {| anydata...; |}?|record {| anydata...; |}[]|record {| anydata...; |}[]?;
+
+public type GenericResponse record {|
+   map<json?> __extensions?;
+   OperationResponse ...;
+|};

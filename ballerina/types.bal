@@ -26,12 +26,20 @@ public type StringQueryOperatorInput record {
 };
 
 # Represents CountryByCodeResponse
-type CountryByCodeResponse record {|
+public type CountryByCodeResponse record {|
     map<json?> __extensions?;
     record {|
         string name;
     |}? country;
 |};
+
+public type Country record {
+    string name;
+};
+
+public type Data record {
+    Country? country;
+};
 
 # Represents CountriesWithContinentResponse
 public type CountriesWithContinentResponse record {|
